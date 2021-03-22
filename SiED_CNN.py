@@ -49,7 +49,7 @@ model.add(layers.Conv2D(filters=256, kernel_size=(3, 3), strides=(1,1), activati
 #model.add(layers.BatchNormalization())
 
 model.add(layers.Conv2D(filters=256, kernel_size=(1, 1), strides=(1,1), activation='relu', padding="same"))
-model.add(layers.BatchNormalization())
+#model.add(layers.BatchNormalization())
 
 model.add(layers.Conv2D(filters=256, kernel_size=(1, 1), strides=(1,1), activation='relu', padding="same"))
 #model.add(layers.BatchNormalization())
