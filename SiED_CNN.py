@@ -4,6 +4,8 @@ import pandas as pd
 
 data = pd.read_csv("SiED.csv").values
 
+np.random.shuffle(data)
+
 train_data = data[:,:10000]
 train_labels = data[:,10000]
     
@@ -22,10 +24,11 @@ train_labels = to_categorical(train_labels)
 
 
 # Setting aside a validation set TODO CREATE VALIDATION SET 
- 
-val_data = train_data[0::9].copy() # start:stop:step
+val_data = train_data[2188:]
+train_x = train_data[:2188]
 
-val_labels = train_labels[0::9].copy()
+val_labels = train_labels[2188:]
+train_y = train_labels[:2188]
 
 # Model definition AlexNet architecture
 from keras import models 
@@ -59,8 +62,40 @@ model.add(layers.Dense(39, activation='softmax'))
 
     
 # Compilling the model
-model.compile(optimizer='rmsprop', loss='categorical_crossentropy', metrics= ['accuracy'])
+model.compile(optimizer='rmsprop', loss='categorical_crossentropy', metrics= ['acc'])
 
 # Train the model
 history = model.fit(train_data, train_labels, epochs=10, batch_size=32, validation_data=(val_data, val_labels))
 
+# Plotting the training and validation loss
+import matplotlib.pyplot as plt
+
+history_dict = history.history
+acc = history.history['acc']
+val_acc = history.history['val_acc']
+
+loss = history.history['loss']
+val_loss = history.history['val_loss']
+
+epochs = range(1, len(acc) + 1)
+
+plt.plot(epochs, loss, 'bo', label='Training loss')
+plt.plot(epochs, val_loss, 'b', label='Validation loss')
+plt.title('Training and validation loss')
+plt.xlabel('Epochs')
+plt.ylabel('Loss')
+plt.legend()
+
+plt.show()
+
+# Plotting the trainig and validation accuracy
+plt.clf() # clears the figure
+acc_values = history_dict['acc']
+val_acc_values = history_dict['val_acc']
+
+plt.plot(epochs, acc, 'bo', label='Training accuracy')
+plt.plot(epochs, val_acc, 'b', label='Validation accuracy')
+plt.title('Training and validation accuarcy')
+plt.xlabel('Epochs')
+plt.ylabel('Loss')
+plt.legend()
