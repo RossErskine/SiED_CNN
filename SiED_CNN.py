@@ -4,12 +4,10 @@ import pandas as pd
 
 data = pd.read_csv("SiED.csv").values
 
-# Shuffle data for validation split
 np.random.shuffle(data)
 
-#slice data int data and  labels
 train_data = data[:,:10000]
-train_labels = data[:,10000]
+train_labels_text = data[:,10000]
     
 #normalise data 
 train_data = train_data.reshape((2431, 100 , 100, 1))
@@ -18,7 +16,7 @@ train_data= train_data.astype('float32') / 255.0
 # preproessing
 from sklearn.preprocessing import LabelEncoder
 le = LabelEncoder()
-train_labels = le.fit_transform(train_labels)
+train_labels = le.fit_transform(train_labels_text)
 
 # encoding data
 from keras.utils import to_categorical
@@ -27,10 +25,12 @@ train_labels = to_categorical(train_labels)
 
 # Setting aside a validation set 
 val_data = train_data[2188:]
-train_x = train_data[:2188]
+test_data = train_data[2100:2188]
+train_x = train_data[:2100]
 
 val_labels = train_labels[2188:]
-train_y = train_labels[:2188]
+test_labels = train_labels[2100:2188]
+train_y = train_labels[:2100]
 
 # Model definition AlexNet architecture
 from keras import models 
@@ -69,8 +69,13 @@ model.compile(optimizer='rmsprop', loss='categorical_crossentropy', metrics= ['a
 # Train the model
 history = model.fit(train_data, train_labels, epochs=10, batch_size=32, validation_data=(val_data, val_labels))
 
+# Evaluate model
+print("Evaluate")
+result = model.evaluate(test_data, test_labels, batch_size=(1))
+dict(zip(model.metrics_names, result))
+
 # Saving the model
-model.save('SiED_CNN_1.h5')
+#model.save('SiED_CNN_3.h5')
 
 # Plotting the training and validation loss
 import matplotlib.pyplot as plt
@@ -84,7 +89,6 @@ val_loss = history.history['val_loss']
 
 epochs = range(1, len(acc) + 1)
 
-# Plotting the trainig and validation loss
 plt.plot(epochs, loss, 'bo', label='Training loss')
 plt.plot(epochs, val_loss, 'b', label='Validation loss')
 plt.title('Training and validation loss')
