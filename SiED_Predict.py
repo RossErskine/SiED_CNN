@@ -24,43 +24,40 @@ from PIL import Image
 image = 'D:/DDocuments/Python/Practical_computer_vision/P&ID plan.png'
 
 # Global variables
-THRESHOLD = 0.6
+THRESHOLD = 0.3
 SYMBOLS = [] # an empty list for Symbol_info class
-
-# Sliding window size & Image size
-(SwinW, SwinH) = (100, 100) 
-(imgW, imgH) = (1010, 1920)
-
      
         
 import numpy as np 
 from Symbol_classes import Symbol_info   # own class in Symbol_classes.py
 
 
-def predict(image, scale, power):
+def predict(image, scale, original_image, power):
     #image = Image.open(image) # Load the image
-    for x in range(0,image.size[1]-100,10):    #width
-        for y in range(0, image.size[0]-100, 10):  #height
-            img = image.crop((x, y, x+SwinW, y+SwinH)) # crop to 100x100 to fit into model
+    for x in range(0,image.size[1]-50,8):    #width
+        for y in range(0, image.size[0]-50, 8):  #height
+            img = image.crop((x, y, x+100, y+100)) # crop to 100x100 to fit into model
             img = img.convert('L')# converts image to a single channel
             img = np.array(img)
             img = img.reshape((-1, 100, 100, 1))
             img = img.astype('float32') / 255.0
             
             pred = model(img) # get prediction scores
-            high_score = np.argmax(pred)    # get highest prediction score
-            newSymbol = Symbol_info(x,y, SiED_INSTANCE_CATEGORY_NAMES[high_score], high_score, scale, power)# Get the class name
-            if pred[0,high_score] > THRESHOLD:
+            high_score_pos = np.argmax(pred)    # get highest prediction score
+            newSymbol = Symbol_info(x,y, SiED_INSTANCE_CATEGORY_NAMES[high_score_pos], pred[0,high_score_pos], scale, original_image, power)# Get the class name
+            if pred[0,high_score_pos] > THRESHOLD:
                 SYMBOLS.append(newSymbol)
 
-def pyramid(image, scale=1.1, minSize=(1000, 1000)):
+def pyramid(image, scale=1.1, minSize=(1000, 1500)):
+     original_image = True
      power = 1
      while True:
         # compute the new dimensions of the image and resize it
         w = int(image.size[1] / scale)
         h = int(image.size[0] / scale)
         image = image.resize((h, w))
-        predict(image, scale, power)
+        predict(image, scale, original_image, power)
+        original_image = False
         power += 1
         #if the resized image does not meet the supplied minimum
         #size, then stop constructing the pyramid
@@ -91,7 +88,7 @@ def nms():
     tf.convert_to_tensor(boxes,dtype=tf.float32)
     tf.convert_to_tensor(scores,dtype=tf.float32)
 
-    selected_indices = tf.image.non_max_suppression(boxes, scores, 25, iou_threshold=0.1)
+    selected_indices = tf.image.non_max_suppression(boxes, scores, 20, iou_threshold=0.1)
     selected_symbols = selectSymbols(selected_indices)
     
     return selected_symbols
