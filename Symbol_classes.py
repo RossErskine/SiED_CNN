@@ -1,11 +1,17 @@
 
 class Symbol_info:
     """ to store detected symbol information """
-    
-    def __init__(self, x, y, label, score, scale, power):
-        x = int(x * (scale ** power)) # moves position depending scale for final image
-        y = int(y * (scale ** power))
-        self.box = (x ,y,(x+ int(100 / (scale ** power))),(y+ int(100 / (scale ** power))))
+   
+    def __init__(self, x, y, label, score, scale, original_image, power):
+        w = 100
+        h = 100
+        if original_image == False:
+            x = int(x * (scale ** power)) # moves position depending scale for final image
+            y = int(y * (scale ** power ))
+            w = int(100 / scale)
+            h = int(100 / scale)
+            
+        self.box = (x ,y,(x+w),(y+h))
         self.label = label
         self.score = score
         self.text =""
